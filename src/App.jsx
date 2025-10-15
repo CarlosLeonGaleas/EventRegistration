@@ -191,7 +191,7 @@ function AppContent() {
           <Route path="/EventRegistration/" element={<Start setSubtitle={setSubtitle} />} />
           <Route path="/EventRegistration/ContactUs" element={<ContactUs setSubtitle={setSubtitle} />} />
           <Route path="/EventRegistration/BINTECH2025" element={<BinTech setSubtitle={setSubtitle} />} />
-          <Route path="/EventRegistration/JornadaII" element={<JornadaIIEdicion setSubtitle={setSubtitle} />} />
+          <Route path="/EventRegistration/JornadaII" element={<JornadaIIEdicion setSubtitle={setSubtitle} event={'JornadaInv2025'} />} />
         </Routes>
       </section>
     </div>

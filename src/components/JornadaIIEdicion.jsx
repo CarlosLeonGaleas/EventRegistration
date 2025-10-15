@@ -20,7 +20,11 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import BadgeIcon from '@mui/icons-material/Badge';
 
-function JornadaIIEdicion({ setSubtitle }) {
+import { collection, query, where, getDocs, setDoc, doc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
+import { v4 as uuidv4 } from "uuid";
+
+function JornadaIIEdicion({ setSubtitle, event }) {
   useEffect(() => {
     setSubtitle('II Jornada de Investigación');
   }, [setSubtitle]);
@@ -81,23 +85,60 @@ function JornadaIIEdicion({ setSubtitle }) {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     const newErrors = validateForm();
-    
+  
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setSnackbarMessage('Por favor, complete todos los campos correctamente');
       setOpenSnackbar(true);
       return;
     }
-    
-    console.log('Datos del formulario:', formData);
-    setSnackbarMessage('¡Registro exitoso!');
-    setOpenSnackbar(true);
-    
-    setTimeout(() => {
+  
+    try {
+      // 1. Verificar si ya existe un registro idéntico
+      const registrosRef = collection(db, event);
+      const q = query(
+        registrosRef,
+        where("cedula", "==", formData.cedula),
+        where("nombres", "==", formData.nombres),
+        where("telefono", "==", formData.telefono),
+        where("correo", "==", formData.correo),
+        where("tipoParticipacion", "==", formData.tipoParticipacion)
+      );
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        // Si ya existe, obtener el docID del participante
+        const existingDoc = querySnapshot.docs[0];
+        setSnackbarMessage("Ya se encuentra registrado un participante con los mismos datos!");
+        console.log("ID del participante existente:", existingDoc.id);
+
+        setOpenSnackbar(true);
+        return;
+      }
+
+      // 2. Crear un nuevo ID de participante (UUID)
+      const participantID = uuidv4();
+  
+      // 3. Crear documento con el ID generado
+      const newDocRef = doc(db, event, participantID);
+
+      await setDoc(newDocRef, {
+        ...formData,
+        participantID,
+        checkedIn: false,
+        fechaRegistro: new Date().toISOString()
+      });
+
+      console.log("✅ Nuevo registro creado con ID:", participantID);
+
+      setSnackbarMessage('¡Registro exitoso!');
+      setOpenSnackbar(true);
+  
       setFormData({
         cedula: '',
         nombres: '',
@@ -105,8 +146,13 @@ function JornadaIIEdicion({ setSubtitle }) {
         correo: '',
         tipoParticipacion: 'publico'
       });
-    }, 1500);
-  };
+  
+    } catch (error) {
+      console.error("Error al registrar:", error);
+      setSnackbarMessage('Ocurrió un error al registrar los datos');
+      setOpenSnackbar(true);
+    }
+  };  
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
