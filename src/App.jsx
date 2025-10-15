@@ -52,7 +52,7 @@ function ResponsiveAppBar({ title, subtitle }) {
             >
               {title}
             </Typography>
-            {subtitle && (
+            {/* {subtitle && (
               <Typography
                 variant="subtitle2"
                 noWrap
@@ -63,7 +63,7 @@ function ResponsiveAppBar({ title, subtitle }) {
               >
                 {subtitle}
               </Typography>
-            )}
+            )} */}
           </Box>
 
           {/* Menú hamburguesa para mobile */}
