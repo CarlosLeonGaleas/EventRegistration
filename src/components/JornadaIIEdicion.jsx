@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  TextField, 
-  Button, 
-  FormControl, 
-  FormLabel, 
-  RadioGroup, 
-  FormControlLabel, 
+import {
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
   Radio,
   Grid,
   Container,
   Alert,
-  Snackbar
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
@@ -23,6 +24,7 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import { collection, query, where, getDocs, setDoc, doc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
+import { QRCodeCanvas } from "qrcode.react";
 
 function JornadaIIEdicion({ setSubtitle, event }) {
   useEffect(() => {
@@ -37,6 +39,9 @@ function JornadaIIEdicion({ setSubtitle, event }) {
     tipoParticipacion: 'publico'
   });
 
+  const [loading, setLoading] = useState(false);
+  const [registroExitoso, setRegistroExitoso] = useState(false);
+  const [participantID, setParticipantID] = useState(null);
   const [errors, setErrors] = useState({});
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -57,36 +62,37 @@ function JornadaIIEdicion({ setSubtitle, event }) {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.cedula.trim()) {
       newErrors.cedula = 'La cédula es requerida';
     } else if (!/^\d{10}$/.test(formData.cedula.trim())) {
       newErrors.cedula = 'La cédula debe tener 10 dígitos';
     }
-    
+
     if (!formData.nombres.trim()) {
       newErrors.nombres = 'Los nombres completos son requeridos';
     } else if (formData.nombres.trim().length < 3) {
       newErrors.nombres = 'Ingrese un nombre válido';
     }
-    
+
     if (!formData.telefono.trim()) {
       newErrors.telefono = 'El teléfono es requerido';
     } else if (!/^\d{10}$/.test(formData.telefono.trim())) {
       newErrors.telefono = 'El teléfono debe tener 10 dígitos';
     }
-    
+
     if (!formData.correo.trim()) {
       newErrors.correo = 'El correo electrónico es requerido';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo.trim())) {
       newErrors.correo = 'Ingrese un correo electrónico válido';
     }
-    
+
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
   
     const newErrors = validateForm();
   
@@ -116,6 +122,8 @@ function JornadaIIEdicion({ setSubtitle, event }) {
         const existingDoc = querySnapshot.docs[0];
         setSnackbarMessage("Ya se encuentra registrado un participante con los mismos datos!");
         console.log("ID del participante existente:", existingDoc.id);
+        setParticipantID(existingDoc.id);
+        setRegistroExitoso(true);
 
         setOpenSnackbar(true);
         return;
@@ -135,8 +143,10 @@ function JornadaIIEdicion({ setSubtitle, event }) {
       });
 
       console.log("✅ Nuevo registro creado con ID:", participantID);
+      setParticipantID(participantID)
 
       setSnackbarMessage('¡Registro exitoso!');
+      setRegistroExitoso(true);
       setOpenSnackbar(true);
   
       setFormData({
@@ -151,16 +161,31 @@ function JornadaIIEdicion({ setSubtitle, event }) {
       console.error("Error al registrar:", error);
       setSnackbarMessage('Ocurrió un error al registrar los datos');
       setOpenSnackbar(true);
+    } finally {
+      setLoading(false);
     }
-  };  
+  };
+
+  const handleDownloadQR = () => {
+    const canvas = document.getElementById("qrCanvas");
+    const pngUrl = canvas
+      .toDataURL("image/png")
+      .replace("image/png", "image/octet-stream");
+    const downloadLink = document.createElement("a");
+    downloadLink.href = pngUrl;
+    downloadLink.download = `QR_${participantID}.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
   return (
-    <Box 
-      sx={{ 
+    <Box
+      sx={{
         minHeight: 'calc(100vh - 64px)',
         background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
         py: 4
@@ -169,9 +194,9 @@ function JornadaIIEdicion({ setSubtitle, event }) {
       <Container maxWidth="lg">
         {/* Título principal */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography 
-            variant="h3" 
-            sx={{ 
+          <Typography
+            variant="h3"
+            sx={{
               fontWeight: 700,
               color: '#27348b',
               mb: 1,
@@ -180,9 +205,9 @@ function JornadaIIEdicion({ setSubtitle, event }) {
           >
             II JORNADA DE INVESTIGACIÓN,
           </Typography>
-          <Typography 
-            variant="h4" 
-            sx={{ 
+          <Typography
+            variant="h4"
+            sx={{
               fontWeight: 600,
               color: '#e2832f',
               fontSize: { xs: '1.25rem', sm: '1.6rem', md: '1.8rem' }
@@ -202,11 +227,11 @@ function JornadaIIEdicion({ setSubtitle, event }) {
         >
           {/* GRID RESPONSIVO */}
           <Grid container spacing={0}>
-            
+
             {/* Banner IZQUIERDO (arriba en móvil) */}
-            <Grid 
-              item 
-              xs={12} 
+            <Grid
+              item
+              xs={12}
               md={6}
               sx={{
                 backgroundColor: '#27348b',
@@ -231,42 +256,43 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                 }}
               />
               <Box sx={{ textAlign: 'center' }}>
-              <Typography sx={{ color: '#ffffff', fontWeight: 600, mb: 0.5 }}>
-                    Más información
-                  </Typography>
-                  <Typography sx={{ color: '#e9f0ff', fontSize: '0.95rem' }}>
-                    investigacion@ister.edu.ec
-                  </Typography>
+                <Typography sx={{ color: '#ffffff', fontWeight: 600, mb: 0.5 }}>
+                  Más información
+                </Typography>
+                <Typography sx={{ color: '#e9f0ff', fontSize: '0.95rem' }}>
+                  investigacion@ister.edu.ec
+                </Typography>
               </Box>
             </Grid>
 
             {/* Formulario DERECHO (abajo en móvil) */}
-            <Grid 
-              item 
-              xs={12} 
-              md={6}
-              sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                p: { xs: 3, sm: 4, md: 5 },
-                width: '100%'
-              }}
-            >
-              <Typography 
-                variant="h5" 
-                sx={{ 
-                  mb: 3, 
-                  fontWeight: 600,
-                  color: '#27348b',
-                  borderLeft: '4px solid #e2832f',
-                  pl: 2
+            {!registroExitoso ? (
+              <Grid
+                item
+                xs={12}
+                md={6}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  p: { xs: 3, sm: 4, md: 5 },
+                  width: '100%'
                 }}
               >
-                Formulario de Registro
-              </Typography>
-              
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 3,
+                    fontWeight: 600,
+                    color: '#27348b',
+                    borderLeft: '4px solid #e2832f',
+                    pl: 2
+                  }}
+                >
+                  Formulario de Registro
+                </Typography>
+
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', width: '100%', flex: 1 }}>
                   <Box sx={{ flex: 1 }}>
                     {/* Cédula */}
                     <Box sx={{ mb: 3 }}>
@@ -291,7 +317,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                         }}
                       />
                     </Box>
-                    
+
                     {/* Nombres Completos */}
                     <Box sx={{ mb: 3 }}>
                       <TextField
@@ -315,7 +341,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                         }}
                       />
                     </Box>
-                    
+
                     {/* Teléfono */}
                     <Box sx={{ mb: 3 }}>
                       <TextField
@@ -339,7 +365,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                         }}
                       />
                     </Box>
-                    
+
                     {/* Correo Electrónico */}
                     <Box sx={{ mb: 3 }}>
                       <TextField
@@ -364,11 +390,11 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                         }}
                       />
                     </Box>
-                    
+
                     {/* Tipo de Participación */}
-                    <FormControl 
-                      component="fieldset" 
-                      sx={{ 
+                    <FormControl
+                      component="fieldset"
+                      sx={{
                         mb: 4,
                         width: '97%',
                         p: 2,
@@ -379,7 +405,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                         }
                       }}
                     >
-                      <FormLabel 
+                      <FormLabel
                         component="legend"
                         sx={{
                           color: '#27348b',
@@ -397,49 +423,121 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                         value={formData.tipoParticipacion}
                         onChange={handleChange}
                       >
-                        <FormControlLabel 
-                          value="publico" 
+                        <FormControlLabel
+                          value="publico"
                           control={
-                            <Radio 
+                            <Radio
                               sx={{
                                 color: '#27348b',
                                 '&.Mui-checked': { color: '#e2832f' },
                               }}
                             />
-                          } 
-                          label="Público externo" 
+                          }
+                          label="Público externo"
                         />
-                        <FormControlLabel 
-                          value="estudiante" 
+                        <FormControlLabel
+                          value="estudiante"
                           control={
-                            <Radio 
+                            <Radio
                               sx={{
                                 color: '#27348b',
                                 '&.Mui-checked': { color: '#e2832f' },
                               }}
                             />
-                          } 
-                          label="Estudiante ISTER" 
+                          }
+                          label="Estudiante ISTER"
                         />
-                        <FormControlLabel 
-                          value="docente" 
+                        <FormControlLabel
+                          value="docente"
                           control={
-                            <Radio 
+                            <Radio
                               sx={{
                                 color: '#27348b',
                                 '&.Mui-checked': { color: '#e2832f' },
                               }}
                             />
-                          } 
-                          label="Docente ISTER" 
+                          }
+                          label="Docente ISTER"
                         />
                       </RadioGroup>
                     </FormControl>
                   </Box>
-                  
+
                   {/* Botón de registro */}
                   <Button 
                     type="submit" 
+                    variant="contained" 
+                    size="large"
+                    fullWidth
+                    disabled={loading}
+                    sx={{ 
+                      py: 1.5,
+                      fontSize: '1.05rem',
+                      fontWeight: 600,
+                      background: 'linear-gradient(135deg, #27348b 0%, #1a2357 100%)',
+                      boxShadow: '0 4px 20px rgba(39, 52, 139, 0.4)',
+                      transition: 'all 0.3s ease',
+                      mt: 'auto',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #1a2357 0%, #27348b 100%)',
+                        boxShadow: '0 6px 25px rgba(39, 52, 139, 0.6)',
+                        transform: 'translateY(-2px)'
+                      }
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <CircularProgress
+                          size={22}
+                          sx={{ color: "white", mr: 1 }}
+                        />
+                        Registrando...
+                      </>
+                    ) : (
+                      "Registrar Participación"
+                    )}
+                  </Button>
+                </form>
+              </Grid>
+            ) : (
+              <Grid
+                item
+                xs={12}
+                md={6}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  p: { xs: 3, sm: 4, md: 5 },
+                  width: '100%'
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 3,
+                    fontWeight: 600,
+                    color: '#27348b',
+                    borderLeft: '4px solid #e2832f',
+                    pl: 2
+                  }}
+                >
+                  Registro realizado
+                </Typography>
+
+                {participantID && (
+                  <>
+                    <Box my={3}>
+                      <QRCodeCanvas id="qrCanvas" value={participantID} size={200} />
+                    </Box>
+
+                    <Typography variant="body1" sx={{ mb: 3, fontSize: '0.95rem' }}>
+                      Tome captura de pantalla o descárgue el código QR para ingresar el día del
+                      evento.
+                    </Typography>
+
+                    <Button 
+                    onClick={handleDownloadQR}
                     variant="contained" 
                     size="large"
                     fullWidth
@@ -458,10 +556,12 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                       }
                     }}
                   >
-                    Registrar Participación
-                  </Button>
-                </form>
-            </Grid>
+                      Descargar QR de registro
+                    </Button>
+                  </>
+                )}
+              </Grid>
+            )}
           </Grid>
         </Paper>
 
@@ -472,8 +572,8 @@ function JornadaIIEdicion({ setSubtitle, event }) {
           onClose={handleCloseSnackbar}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          <Alert 
-            onClose={handleCloseSnackbar} 
+          <Alert
+            onClose={handleCloseSnackbar}
             severity={snackbarMessage.includes('exitoso') ? 'success' : 'error'}
             sx={{ width: '100%' }}
           >
