@@ -25,6 +25,7 @@ import { collection, query, where, getDocs, setDoc, doc } from "firebase/firesto
 import { db } from "../firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import { QRCodeCanvas } from "qrcode.react";
+import html2canvas from 'html2canvas';
 
 function JornadaIIEdicion({ setSubtitle, event }) {
   useEffect(() => {
@@ -149,14 +150,6 @@ function JornadaIIEdicion({ setSubtitle, event }) {
       setRegistroExitoso(true);
       setOpenSnackbar(true);
   
-      setFormData({
-        cedula: '',
-        nombres: '',
-        telefono: '',
-        correo: '',
-        tipoParticipacion: 'publico'
-      });
-  
     } catch (error) {
       console.error("Error al registrar:", error);
       setSnackbarMessage('Ocurrió un error al registrar los datos');
@@ -166,17 +159,51 @@ function JornadaIIEdicion({ setSubtitle, event }) {
     }
   };
 
-  const handleDownloadQR = () => {
-    const canvas = document.getElementById("qrCanvas");
-    const pngUrl = canvas
-      .toDataURL("image/png")
-      .replace("image/png", "image/octet-stream");
-    const downloadLink = document.createElement("a");
-    downloadLink.href = pngUrl;
-    downloadLink.download = `QR_${participantID}.png`;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+  const handleDownloadQR = async () => {
+    try {
+      const ticketElement = document.getElementById('ticketContainer');
+      
+      if (!ticketElement) {
+        console.error('No se encontró el contenedor del ticket');
+        return;
+      }
+  
+      // Usar html2canvas para convertir el elemento a imagen
+      const canvas = await html2canvas(ticketElement, {
+        scale: 2, // Mayor calidad
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true
+      });
+  
+      // Convertir el canvas a blob
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          console.error('Error al crear la imagen');
+          return;
+        }
+  
+        // Crear URL temporal del blob
+        const url = URL.createObjectURL(blob);
+        
+        // Crear elemento <a> para descargar
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ticket-${formData.cedula}-${participantID}.png`;
+        
+        // Simular click para descargar
+        document.body.appendChild(link);
+        link.click();
+        
+        // Limpiar
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+  
+    } catch (error) {
+      console.error('Error al descargar el ticket:', error);
+      // Aquí podrías mostrar un mensaje de error al usuario
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -508,6 +535,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
+                  alignItems: 'center',
                   p: { xs: 3, sm: 4, md: 5 },
                   width: '100%'
                 }}
@@ -519,7 +547,8 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                     fontWeight: 600,
                     color: '#27348b',
                     borderLeft: '4px solid #e2832f',
-                    pl: 2
+                    pl: 2,
+                    alignSelf: 'flex-start'
                   }}
                 >
                   Registro realizado
@@ -527,36 +556,227 @@ function JornadaIIEdicion({ setSubtitle, event }) {
 
                 {participantID && (
                   <>
-                    <Box my={3}>
-                      <QRCodeCanvas id="qrCanvas" value={participantID} size={200} />
+                    {/* Ticket/Carnet */}
+                    <Box
+                      id="ticketContainer"
+                      sx={{
+                        width: '100%',
+                        maxWidth: '400px',
+                        background: 'linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%)',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: '0 8px 32px rgba(39, 52, 139, 0.15)',
+                        border: '2px solid #27348b',
+                        mb: 3
+                      }}
+                    >
+                      {/* Header del ticket */}
+                      <Box
+                        sx={{
+                          background: 'linear-gradient(135deg, #27348b 0%, #1a2357 100%)',
+                          py: 2.5,
+                          px: 3,
+                          textAlign: 'center'
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontSize: '1.1rem',
+                            fontWeight: 700,
+                            color: '#ffffff',
+                            lineHeight: 1.3,
+                            mb: 0.5
+                          }}
+                        >
+                          II JORNADA DE INVESTIGACIÓN,
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: '0.9rem',
+                            fontWeight: 600,
+                            color: '#e2832f',
+                            lineHeight: 1.2
+                          }}
+                        >
+                          INNOVACIÓN Y TRANSFERENCIA DE TECNOLOGÍA
+                        </Typography>
+                      </Box>
+
+                      {/* Código QR */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          py: 3,
+                          background: '#ffffff'
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: '#ffffff',
+                            border: '3px solid #27348b',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                          }}
+                        >
+                          <QRCodeCanvas id="qrCanvas" value={participantID} size={180} />
+                        </Box>
+                      </Box>
+
+                      {/* Información del participante */}
+                      <Box
+                        sx={{
+                          px: 3,
+                          pb: 3,
+                          background: '#ffffff'
+                        }}
+                      >
+                        {/* Nombre */}
+                        <Box sx={{ mb: 2, textAlign: 'center' }}>
+                          <Typography
+                            sx={{
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              color: '#27348b',
+                              mb: 0.5,
+                              letterSpacing: '0.5px'
+                            }}
+                          >
+                            PARTICIPANTE
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '1rem',
+                              fontWeight: 700,
+                              color: '#1a2357',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.3px'
+                            }}
+                          >
+                            {formData.nombres}
+                          </Typography>
+                        </Box>
+
+                        {/* Cédula */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 1.5,
+                            py: 1,
+                            px: 2,
+                            borderRadius: 1.5,
+                            background: 'linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%)'
+                          }}
+                        >
+                          <BadgeIcon sx={{ fontSize: '1.1rem', color: '#27348b', mr: 1 }} />
+                          <Typography
+                            sx={{
+                              fontSize: '0.9rem',
+                              fontWeight: 600,
+                              color: '#1a2357'
+                            }}
+                          >
+                            {formData.cedula}
+                          </Typography>
+                        </Box>
+
+                        {/* Teléfono */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 1.5,
+                            py: 1,
+                            px: 2,
+                            borderRadius: 1.5,
+                            background: 'linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%)'
+                          }}
+                        >
+                          <PhoneIcon sx={{ fontSize: '1.1rem', color: '#27348b', mr: 1 }} />
+                          <Typography
+                            sx={{
+                              fontSize: '0.9rem',
+                              fontWeight: 600,
+                              color: '#1a2357'
+                            }}
+                          >
+                            {formData.telefono}
+                          </Typography>
+                        </Box>
+
+                        {/* Correo */}
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            py: 1,
+                            px: 2,
+                            borderRadius: 1.5,
+                            background: 'linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%)'
+                          }}
+                        >
+                          <EmailIcon sx={{ fontSize: '1.1rem', color: '#27348b', mr: 1 }} />
+                          <Typography
+                            sx={{
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              color: '#1a2357',
+                              wordBreak: 'break-all'
+                            }}
+                          >
+                            {formData.correo}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Footer decorativo */}
+                      <Box
+                        sx={{
+                          height: '8px',
+                          background: 'linear-gradient(90deg, #27348b 0%, #e2832f 100%)'
+                        }}
+                      />
                     </Box>
 
-                    <Typography variant="body1" sx={{ mb: 3, fontSize: '0.95rem' }}>
-                      Tome captura de pantalla o descárgue el código QR para ingresar el día del
-                      evento.
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        mb: 3, 
+                        fontSize: '0.9rem',
+                        color: '#555',
+                        textAlign: 'center',
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      Tome captura de pantalla o descargue su ticket para ingresar el día del evento.
                     </Typography>
 
                     <Button 
-                    onClick={handleDownloadQR}
-                    variant="contained" 
-                    size="large"
-                    fullWidth
-                    sx={{ 
-                      py: 1.5,
-                      fontSize: '1.05rem',
-                      fontWeight: 600,
-                      background: 'linear-gradient(135deg, #27348b 0%, #1a2357 100%)',
-                      boxShadow: '0 4px 20px rgba(39, 52, 139, 0.4)',
-                      transition: 'all 0.3s ease',
-                      mt: 'auto',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #1a2357 0%, #27348b 100%)',
-                        boxShadow: '0 6px 25px rgba(39, 52, 139, 0.6)',
-                        transform: 'translateY(-2px)'
-                      }
-                    }}
-                  >
-                      Descargar QR de registro
+                      onClick={handleDownloadQR}
+                      variant="contained" 
+                      size="large"
+                      fullWidth
+                      sx={{ 
+                        py: 1.5,
+                        fontSize: '1.05rem',
+                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, #27348b 0%, #1a2357 100%)',
+                        boxShadow: '0 4px 20px rgba(39, 52, 139, 0.4)',
+                        transition: 'all 0.3s ease',
+                        maxWidth: '400px',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #1a2357 0%, #27348b 100%)',
+                          boxShadow: '0 6px 25px rgba(39, 52, 139, 0.6)',
+                          transform: 'translateY(-2px)'
+                        }
+                      }}
+                    >
+                      Descargar Ticket
                     </Button>
                   </>
                 )}
