@@ -4,6 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Start from './components/Start.jsx';
 import ContactUs from './components/ContactUs.jsx';
 import BinTech from './components/BinTech.jsx';
+import JornadaIIEdicion from './components/JornadaIIEdicion.jsx';
 import './App.css';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 
@@ -164,7 +165,7 @@ function ResponsiveAppBar({ title, subtitle }) {
 
 function AppContent() {
   const location = useLocation();
-  const [title] = useState('Registrar Participantes');
+  const [title] = useState('REGISTRO DE PARTICIPANTES');
   const [subtitle, setSubtitle] = useState('');
 
   // Actualizar subtítulo según la ruta
@@ -173,6 +174,8 @@ function AppContent() {
       setSubtitle('');
     } else if (location.pathname === '/EventRegistration/BINTECH2025') {
       setSubtitle('BINTECH 2025');
+    } else if (location.pathname === '/EventRegistration/JornadaII') {
+      setSubtitle('II Jornada de Investigación');
     } else if (location.pathname === '/EventRegistration/ContactUs') {
       setSubtitle('');
     }
@@ -188,6 +191,7 @@ function AppContent() {
           <Route path="/EventRegistration/" element={<Start setSubtitle={setSubtitle} />} />
           <Route path="/EventRegistration/ContactUs" element={<ContactUs setSubtitle={setSubtitle} />} />
           <Route path="/EventRegistration/BINTECH2025" element={<BinTech setSubtitle={setSubtitle} />} />
+          <Route path="/EventRegistration/JornadaII" element={<JornadaIIEdicion setSubtitle={setSubtitle} />} />
         </Routes>
       </section>
     </div>
