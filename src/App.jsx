@@ -9,8 +9,8 @@ import './App.css';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 
 const pages = [
-  { name: 'Acerca de', path: '/EventRegistration/' },
-  { name: 'Contáctanos', path: '/EventRegistration/ContactUs' }
+  { name: 'Acerca de', path: '/' },
+  { name: 'Contáctanos', path: '/ContactUs' }
 ];
 
 function ResponsiveAppBar({ title, subtitle }) {
@@ -107,7 +107,7 @@ function ResponsiveAppBar({ title, subtitle }) {
           {/* Logo e imagen para mobile */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1, alignItems: 'center' }}>
             <img 
-              src="/RU_Blanco.svg" 
+              src="/RU_Blanco.svg"
               alt="Rumiñahui"
               style={{ height: '40px' }}
             />
@@ -170,13 +170,13 @@ function AppContent() {
 
   // Actualizar subtítulo según la ruta
   useState(() => {
-    if (location.pathname === '/EventRegistration/') {
+    if (location.pathname === '/') {
       setSubtitle('');
-    } else if (location.pathname === '/EventRegistration/BINTECH2025') {
+    } else if (location.pathname === '/BINTECH2025') {
       setSubtitle('BINTECH 2025');
-    } else if (location.pathname === '/EventRegistration/JornadaII') {
+    } else if (location.pathname === '/JornadaII') {
       setSubtitle('II Jornada de Investigación');
-    } else if (location.pathname === '/EventRegistration/ContactUs') {
+    } else if (location.pathname === '/ContactUs') {
       setSubtitle('');
     }
   }, [location]);
@@ -187,11 +187,11 @@ function AppContent() {
         <ResponsiveAppBar title={title} subtitle={subtitle} />
       </header>
       <section>
-        <Routes>
-          <Route path="/EventRegistration/" element={<Start setSubtitle={setSubtitle} />} />
-          <Route path="/EventRegistration/ContactUs" element={<ContactUs setSubtitle={setSubtitle} />} />
-          <Route path="/EventRegistration/BINTECH2025" element={<BinTech setSubtitle={setSubtitle} />} />
-          <Route path="/EventRegistration/JornadaII" element={<JornadaIIEdicion setSubtitle={setSubtitle} event={'JornadaInv2025'} />} />
+        <Routes basename="/EventRegistration">
+          <Route path="/" element={<Start setSubtitle={setSubtitle} />} />
+          <Route path="/ContactUs" element={<ContactUs setSubtitle={setSubtitle} />} />
+          <Route path="/BINTECH2025" element={<BinTech setSubtitle={setSubtitle} />} />
+          <Route path="/JornadaII" element={<JornadaIIEdicion setSubtitle={setSubtitle} event={'JornadaInv2025'} />} />
         </Routes>
       </section>
     </div>
