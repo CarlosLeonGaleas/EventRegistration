@@ -4,6 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Start from './components/Start.jsx';
 import ContactUs from './components/ContactUs.jsx';
 import BinTech from './components/BinTech.jsx';
+import logoRUBlanco from '/RU_Blanco.svg';
 import JornadaIIEdicion from './components/JornadaIIEdicion.jsx';
 import './App.css';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
@@ -31,7 +32,7 @@ function ResponsiveAppBar({ title, subtitle }) {
           {/* Logo e imagen para desktop */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, mr: 2, alignItems: 'center' }}>
             <img 
-              src="/RU_Blanco.svg" 
+              src={logoRUBlanco}
               alt="Rumiñahui" 
               style={{ height: '50px', marginRight: '10px' }}
             />
@@ -107,7 +108,7 @@ function ResponsiveAppBar({ title, subtitle }) {
           {/* Logo e imagen para mobile */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1, alignItems: 'center' }}>
             <img 
-              src="/RU_Blanco.svg"
+              src={logoRUBlanco}
               alt="Rumiñahui"
               style={{ height: '40px' }}
             />
@@ -187,7 +188,7 @@ function AppContent() {
         <ResponsiveAppBar title={title} subtitle={subtitle} />
       </header>
       <section>
-        <Routes basename="/EventRegistration">
+        <Routes>
           <Route path="/" element={<Start setSubtitle={setSubtitle} />} />
           <Route path="/ContactUs" element={<ContactUs setSubtitle={setSubtitle} />} />
           <Route path="/BINTECH2025" element={<BinTech setSubtitle={setSubtitle} />} />
@@ -200,7 +201,7 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/EventRegistration">
       <AppContent />
     </BrowserRouter>
   );

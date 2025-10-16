@@ -26,6 +26,7 @@ import { db } from "../firebaseConfig";
 import { v4 as uuidv4 } from "uuid";
 import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from 'html2canvas';
+import BannerJornada from '/BannerJornada.jpeg';
 
 function JornadaIIEdicion({ setSubtitle, event }) {
   useEffect(() => {
@@ -272,7 +273,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
             >
               <Box
                 component="img"
-                src="/BannerJornada.jpeg"
+                src={BannerJornada}
                 alt="Banner II Jornada de Investigación"
                 sx={{
                   width: '75%',
