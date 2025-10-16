@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Container } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import Start from './components/Start.jsx';
@@ -7,7 +7,7 @@ import BinTech from './components/BinTech.jsx';
 import logoRUBlanco from '/RU_Blanco.svg';
 import JornadaIIEdicion from './components/JornadaIIEdicion.jsx';
 import './App.css';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 
 const pages = [
   { name: 'Acerca de', path: '/' },
@@ -169,8 +169,8 @@ function AppContent() {
   const [title] = useState('REGISTRO DE PARTICIPANTES');
   const [subtitle, setSubtitle] = useState('');
 
-  // Actualizar subtítulo según la ruta
-  useState(() => {
+  // Cambiar useState por useEffect
+  useEffect(() => {
     if (location.pathname === '/') {
       setSubtitle('');
     } else if (location.pathname === '/BINTECH2025') {
@@ -201,9 +201,9 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter basename="/EventRegistration">
+    <HashRouter>
       <AppContent />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
