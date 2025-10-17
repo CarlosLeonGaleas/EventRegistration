@@ -756,7 +756,7 @@ function JornadaIIEdicion({ setSubtitle, event }) {
                           fontStyle: 'italic'
                         }}
                       >
-                        Tome captura de pantalla o descargue su ticket para ingresar el día del evento.
+                        Muestra este código QR al ingreso del evento
                       </Typography>
 
                       <Button
