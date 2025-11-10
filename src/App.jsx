@@ -5,12 +5,14 @@ import Start from './components/Start.jsx';
 import ContactUs from './components/ContactUs.jsx';
 import BinTech from './components/BinTech.jsx';
 import logoRUBlanco from '/RU_Blanco.svg';
+import inscriptioLogo from '/Inscriptio.svg';
+import inscriptionLogoBN from '/Inscriptio-BN.svg';
 import JornadaIIEdicion from './components/JornadaIIEdicion.jsx';
 import './App.css';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 
 const pages = [
-  { name: 'Acerca de', path: '/' },
+  { name: 'Sobre la Plataforma', path: '/' },
   { name: 'Contáctanos', path: '/ContactUs' }
 ];
 
@@ -32,9 +34,9 @@ function ResponsiveAppBar({ title, subtitle }) {
           {/* Logo e imagen para desktop */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, mr: 2, alignItems: 'center' }}>
             <img 
-              src={logoRUBlanco}
-              alt="Rumiñahui" 
-              style={{ height: '50px', marginRight: '10px' }}
+              src={inscriptioLogo}
+              alt="Main Logo" 
+              style={{ height: '45px', marginRight: '10px' }}
             />
           </Box>
           
@@ -108,7 +110,7 @@ function ResponsiveAppBar({ title, subtitle }) {
           {/* Logo e imagen para mobile */}
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1, alignItems: 'center' }}>
             <img 
-              src={logoRUBlanco}
+              src={inscriptioLogo}
               alt="Rumiñahui"
               style={{ height: '40px' }}
             />
