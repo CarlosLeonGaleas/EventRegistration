@@ -111,7 +111,7 @@ function ResponsiveAppBar({ title, subtitle }) {
           <Box sx={{ display: { xs: 'flex', md: 'none' }, mr: 1, alignItems: 'center' }}>
             <img 
               src={inscriptioLogo}
-              alt="Rumiñahui"
+              alt="Main Logo"
               style={{ height: '40px' }}
             />
           </Box>
